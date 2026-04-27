@@ -29,20 +29,32 @@ def home():
 @app.post("/predecir")
 async def predecir(imagen: UploadFile = File(...)):
 
+    # leer imagen
     img_bytes = await imagen.read()
 
     img = Image.open(io.BytesIO(img_bytes)).convert("RGB")
+
+    # resize igual al entrenamiento
     img = img.resize((300, 300))
 
+    # convertir a array
     arr = np.array(img, dtype=np.float32)
 
-    # 🔥 NORMALIZACIÓN SIMPLE (más estable en deploy)
+    # normalización
     arr = arr / 255.0
 
+    # batch dimension
     arr = np.expand_dims(arr, axis=0)
 
+    # predicción
     preds = modelo.predict(arr, verbose=0)[0]
 
+    # 🔥 DEBUG IMPORTANTE
+    print("PREDICCIONES:", preds)
+    print("CLASE:", CLASES[np.argmax(preds)])
+    print("CONFIANZA:", float(np.max(preds)))
+
+    # resultado
     clase = CLASES[int(np.argmax(preds))]
     confianza = float(np.max(preds)) * 100
 
