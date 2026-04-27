@@ -26,21 +26,21 @@ async def predecir(imagen: UploadFile = File(...)):
     img = Image.open(io.BytesIO(await imagen.read())).convert("RGB")
     img = img.resize((300, 300))
 
-    arr = np.array(img, dtype=np.float32)
+    arr = np.array(img).astype(np.float32)
 
-    # ✔ CORRECCIÓN CRÍTICA
+    # ✔ correcto para EfficientNet
     arr = preprocess_input(arr)
 
     arr = np.expand_dims(arr, axis=0)
 
     preds = modelo.predict(arr, verbose=0)[0]
 
-    print("PREDICCIONES:", preds)
-    print("CLASE:", CLASES[np.argmax(preds)])
-    print("CONFIANZA:", float(np.max(preds)))
-
     clase = CLASES[np.argmax(preds)]
     confianza = float(np.max(preds)) * 100
+
+    print("PREDICCIONES:", preds)
+    print("CLASE:", clase)
+    print("CONFIANZA:", confianza)
 
     if clase == "No_Maiz" or confianza < 70:
         return {
