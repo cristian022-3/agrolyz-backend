@@ -6,11 +6,10 @@ from PIL import Image
 import io
 from tensorflow.keras.applications.efficientnet import preprocess_input
 from supabase import create_client
-import uuid
 import datetime
 
 # ================================
-# APP FASTAPI
+# APP
 # ================================
 app = FastAPI()
 
@@ -33,10 +32,11 @@ CLASES = ['No_Maiz', 'Otra_Enfermedad', 'Roya', 'Sana']
 # ================================
 SUPABASE_URL = "https://ovvtjqwkfdwymbczcanm.supabase.co"
 SUPABASE_KEY = "sb_publishable_-ug71BjVdFs9OLHKBBvCXA_U2FJkOrL"
+
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # ================================
-# HOME
+# ENDPOINT PRINCIPAL
 # ================================
 @app.get("/")
 def home():
@@ -55,7 +55,7 @@ async def predecir(imagen: UploadFile = File(...)):
     # convertir a array
     arr = np.array(img).astype(np.float32)
 
-    # preprocesamiento EfficientNet
+    # preprocesamiento IA
     arr = preprocess_input(arr)
 
     # batch
@@ -72,7 +72,7 @@ async def predecir(imagen: UploadFile = File(...)):
     print("CONFIANZA:", confianza)
 
     # ================================
-    # FILTRO
+    # FILTRO DE SEGURIDAD
     # ================================
     if clase == "No_Maiz" or confianza < 70:
         return {
@@ -85,7 +85,6 @@ async def predecir(imagen: UploadFile = File(...)):
     # ================================
     try:
         supabase.table("diagnosticos").insert({
-            "id": str(uuid.uuid4()),
             "resultado_enfermedad": clase,
             "nivel_confianza": round(confianza, 2),
             "fecha_analisis": datetime.datetime.utcnow().isoformat()
@@ -95,7 +94,7 @@ async def predecir(imagen: UploadFile = File(...)):
         print("ERROR SUPABASE:", e)
 
     # ================================
-    # RESPUESTA
+    # RESPUESTA FINAL
     # ================================
     return {
         "valido": True,
