@@ -87,7 +87,8 @@ async def predecir(imagen: UploadFile = File(...)):
         supabase.table("diagnosticos").insert({
             "resultado_enfermedad": clase,
             "nivel_confianza": round(confianza, 2),
-            "fecha_analisis": datetime.datetime.utcnow().isoformat()
+            "fecha_analisis": datetime.datetime.utcnow().isoformat(),
+            "productor_id": None  # ⚠️ luego lo conectamos con usuario real
         }).execute()
 
     except Exception as e:
